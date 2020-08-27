@@ -18,12 +18,6 @@
 
     Import-DscResource -ModuleName AzureLabDSC
 
-    $LogFolder = "TempLog"
-    $LogPath = "c:\$LogFolder"
-    $CM = "CMTP"
-    $DName = $DomainName.Split(".")[0]
-    $PSComputerAccount = "$DName\$PSName$"
-    $DPMPComputerAccount = "$DName\$DPMPName$"
 
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
 
