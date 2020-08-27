@@ -16,7 +16,7 @@
         [System.Management.Automation.PSCredential]$Admincreds
     )
 
-    Import-DscResource -ModuleName TemplateHelpDSC
+    Import-DscResource -ModuleName AzureLabDSC
 
     $LogFolder = "TempLog"
     $LogPath = "c:\$LogFolder"
@@ -35,25 +35,10 @@
             RebootNodeIfNeeded = $true
         }
 
-        SetCustomPagingFile PagingSettings
-        {
-            Drive       = 'C:'
-            InitialSize = '8192'
-            MaximumSize = '8192'
-        }
-
-        InstallFeatureForSCCM InstallFeature
-        {
-            Name = 'DC'
-            Role = 'DC'
-            DependsOn = "[SetCustomPagingFile]PagingSettings"
-        }
-        
         SetupDomain FirstDS
         {
             DomainFullName = $DomainName
             SafemodeAdministratorPassword = $DomainCreds
-            DependsOn = "[InstallFeatureForSCCM]InstallFeature"
         }
 
         VerifyComputerJoinDomain WaitForPS
@@ -70,74 +55,6 @@
             DependsOn = "[SetupDomain]FirstDS"
         }
 
-        File ShareFolder
-        {            
-            DestinationPath = $LogPath     
-            Type = 'Directory'            
-            Ensure = 'Present'
-            DependsOn = @("[VerifyComputerJoinDomain]WaitForPS","[VerifyComputerJoinDomain]WaitForDPMP")
-        }
 
-        FileReadAccessShare DomainSMBShare
-        {
-            Name   = $LogFolder
-            Path =  $LogPath
-            Account = $PSComputerAccount,$DPMPComputerAccount
-            DependsOn = "[File]ShareFolder"
-        }
-
-        WriteConfigurationFile WritePSJoinDomain
-        {
-            Role = "DC"
-            LogPath = $LogPath
-            WriteNode = "PSJoinDomain"
-            Status = "Passed"
-            Ensure = "Present"
-            DependsOn = "[FileReadAccessShare]DomainSMBShare"
-        }
-
-        WriteConfigurationFile WriteDPMPJoinDomain
-        {
-            Role = "DC"
-            LogPath = $LogPath
-            WriteNode = "DPMPJoinDomain"
-            Status = "Passed"
-            Ensure = "Present"
-            DependsOn = "[FileReadAccessShare]DomainSMBShare"
-        }
-
-        DelegateControl AddPS
-        {
-            Machine = $PSName
-            DomainFullName = $DomainName
-            Ensure = "Present"
-            DependsOn = "[WriteConfigurationFile]WritePSJoinDomain"
-        }
-
-        DelegateControl AddDPMP
-        {
-            Machine = $DPMPName
-            DomainFullName = $DomainName
-            Ensure = "Present"
-            DependsOn = "[WriteConfigurationFile]WriteDPMPJoinDomain"
-        }
-
-        WriteConfigurationFile WriteDelegateControlfinished
-        {
-            Role = "DC"
-            LogPath = $LogPath
-            WriteNode = "DelegateControl"
-            Status = "Passed"
-            Ensure = "Present"
-            DependsOn = @("[DelegateControl]AddPS","[DelegateControl]AddDPMP")
-        }
-
-        WaitForExtendSchemaFile WaitForExtendSchemaFile
-        {
-            MachineName = $PSName
-            ExtFolder = $CM
-            Ensure = "Present"
-            DependsOn = "[WriteConfigurationFile]WriteDelegateControlfinished"
-        }
     }
 }

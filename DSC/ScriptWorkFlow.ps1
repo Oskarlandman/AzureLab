@@ -9,11 +9,11 @@ if(!(Test-Path $ProvisionToolPath))
 
 $ConfigurationFile = Join-Path -Path $ProvisionToolPath -ChildPath "$Role.json"
 
-if (Test-Path -Path $ConfigurationFile) 
+if (Test-Path -Path $ConfigurationFile)
 {
     $Configuration = Get-Content -Path $ConfigurationFile | ConvertFrom-Json
-} 
-else 
+}
+else
 {
     [hashtable]$Actions = @{
         InstallSCCM = @{
@@ -42,16 +42,16 @@ else
 }
 
 #Install CM and Config
-$ScriptFile = Join-Path -Path $ProvisionToolPath -ChildPath "InstallAndUpdateSCCM.ps1"
+# $ScriptFile = Join-Path -Path $ProvisionToolPath -ChildPath "InstallAndUpdateSCCM.ps1"
 
-. $ScriptFile $DomainFullName $CM $CMUser $Role $ProvisionToolPath
+# . $ScriptFile $DomainFullName $CM $CMUser $Role $ProvisionToolPath
 
 #Install DP
-$ScriptFile = Join-Path -Path $ProvisionToolPath -ChildPath "InstallDP.ps1"
+# $ScriptFile = Join-Path -Path $ProvisionToolPath -ChildPath "InstallDP.ps1"
 
-. $ScriptFile $DomainFullName $DPMPName $Role $ProvisionToolPath
+# . $ScriptFile $DomainFullName $DPMPName $Role $ProvisionToolPath
 
-#Install MP
-$ScriptFile = Join-Path -Path $ProvisionToolPath -ChildPath "InstallMP.ps1"
+# #Install MP
+# $ScriptFile = Join-Path -Path $ProvisionToolPath -ChildPath "InstallMP.ps1"
 
-. $ScriptFile $DomainFullName $DPMPName $Role $ProvisionToolPath
+# . $ScriptFile $DomainFullName $DPMPName $Role $ProvisionToolPath

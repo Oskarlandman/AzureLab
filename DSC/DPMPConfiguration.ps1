@@ -15,8 +15,8 @@
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$Admincreds
     )
-    
-    Import-DscResource -ModuleName TemplateHelpDSC
+
+    Import-DscResource -ModuleName AzureLabDSC
 
     $LogFolder = "TempLog"
     $LogPath = "c:\$LogFolder"
@@ -35,24 +35,10 @@
             RebootNodeIfNeeded = $true
         }
 
-        SetCustomPagingFile PagingSettings
-        {
-            Drive       = 'C:'
-            InitialSize = '8192'
-            MaximumSize = '8192'
-        }
-
         SetDNS DnsServerAddress
         {
             DNSIPAddress = $DNSIPAddress
             Ensure = "Present"
-            DependsOn = "[SetCustomPagingFile]PagingSettings"
-        }
-
-        InstallFeatureForSCCM InstallFeature
-        {
-            Name = "DPMP"
-            Role = "Distribution Point","Management Point"
             DependsOn = "[SetCustomPagingFile]PagingSettings"
         }
 
@@ -62,7 +48,7 @@
             DCName = $DCName
             DependsOn = "[SetDNS]DnsServerAddress"
         }
-        
+
 
         JoinDomain JoinDomain
         {
@@ -71,59 +57,10 @@
             DependsOn = "[WaitForDomainReady]WaitForDomain"
         }
 
-        WaitForConfigurationFile WaitForPSJoinDomain
-        {
-            Role = "DC"
-            MachineName = $DCName
-            LogFolder = $LogFolder
-            ReadNode = "PSJoinDomain"
-            Ensure = "Present"
-            DependsOn = "[JoinDomain]JoinDomain"
-        }
-
-        File ShareFolder
-        {            
-            DestinationPath = $LogPath     
-            Type = 'Directory'            
-            Ensure = 'Present'
-            DependsOn = "[WaitForConfigurationFile]WaitForPSJoinDomain"
-        }
-
-        FileReadAccessShare DomainSMBShare
-        {
-            Name   = $LogFolder
-            Path = $LogPath
-            Account = $DCComputerAccount,$PSComputerAccount
-            DependsOn = "[File]ShareFolder"
-        }
-
-        OpenFirewallPortForSCCM OpenFirewall
-        {
-            Name = "DPMP"
-            Role = "Distribution Point","Management Point"
-            DependsOn = "[JoinDomain]JoinDomain"
-        }
-
         AddUserToLocalAdminGroup AddADUserToLocalAdminGroup {
             Name = $($Admincreds.UserName)
             DomainName = $DomainName
-            DependsOn = "[FileReadAccessShare]DomainSMBShare"
-        }
-
-        AddUserToLocalAdminGroup AddADComputerToLocalAdminGroup {
-            Name = "$PrimarySiteName"
-            DomainName = $DomainName
-            DependsOn = "[FileReadAccessShare]DomainSMBShare"
-        }
-
-        WriteConfigurationFile WriteDPMPFinished
-        {
-            Role = "DPMP"
-            LogPath = $LogPath
-            WriteNode = "DPMPFinished"
-            Status = "Passed"
-            Ensure = "Present"
-            DependsOn = "[AddUserToLocalAdminGroup]AddADUserToLocalAdminGroup","[AddUserToLocalAdminGroup]AddADComputerToLocalAdminGroup"
+            DependsOn = "[WaitForDomainReady]WaitForDomain"
         }
     }
 }
