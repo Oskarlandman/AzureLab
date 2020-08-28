@@ -48,7 +48,7 @@
       }
     },
     "variables": {
-      "dscScript": "DSC/DCConfiguration.zip",
+      "dscScript": "DCConfiguration.zip",
       "virtualNetworkName": "[concat(toLower(parameters('prefix')), '-vnet')]",
       "domainName": "contoso.com",
       "timeZone": "UTC",
@@ -176,7 +176,7 @@
           "count": 1
         },
         "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/',toLower(parameters('prefix')),variables('vmname')[0]"
+          "[concat('Microsoft.Compute/virtualMachines/',toLower(parameters('prefix')),variables('vmname')[0])]"
         ],
         "properties": {
           "publisher": "Microsoft.Powershell",
