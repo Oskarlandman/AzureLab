@@ -173,7 +173,7 @@
         "location": "[parameters('location')]",
         "copy": {
           "name": "dscextensioncopy",
-          "count": 3
+          "count": 1
         },
         "dependsOn": [
           "[concat('Microsoft.Compute/virtualMachines/',toLower(parameters('prefix')),variables('vmname')[0]"
