@@ -48,7 +48,7 @@
       }
     },
     "variables": {
-      "dscScript": "DCConfiguration.zip",
+      "dscScript": "DCConfiguration.ps1.zip",
       "virtualNetworkName": "[concat(toLower(parameters('prefix')), '-vnet')]",
       "domainName": "contoso.com",
       "timeZone": "UTC",
@@ -168,31 +168,33 @@
       },
       {
         "type": "Microsoft.Compute/virtualMachines/extensions",
-        "apiVersion": "2018-06-01",
-        "name": "[concat(toLower(parameters('prefix')),variables('vmname')[0],'/WorkFlow')]",
-        "location": "[parameters('location')]",
-        "copy": {
-          "name": "dscextensioncopy",
-          "count": 1
-        },
-        "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/',toLower(parameters('prefix')),variables('vmname')[0])]"
-        ],
-        "properties": {
-          "publisher": "Microsoft.Powershell",
-          "type": "DSC",
-          "typeHandlerVersion": "2.21",
-          "autoUpgradeMinorVersion": true,
-          "settings": {
-            "modulesUrl": "[Uri(parameters('_artifactsLocation'),concat(variables('dscScript'),parameters('_artifactsLocationSasToken')))]",
-            "configurationFunction": "[concat(variables('vmrole')[0],'Configuration.ps1\\Configuration')]",
-            "Properties": {
-              "DomainName": "[variables('domainName')]",
-              "DCName": "[concat(parameters('prefix'),variables('vmname')[0])]",
-              "DNSIPAddress": "[concat(variables('networkSettings').virtualMachinesIPAddress,add(int('0'),int('4')))]",
-              "AdminCreds": {
-                "UserName": "[parameters('adminUsername')]",
-                "Password": "PrivateSettingsRef:AdminPassword"
+      "apiVersion": "2018-06-01",
+      "name": "[concat(toLower(parameters('prefix')),variables('vmname')[copyIndex()],'/WorkFlow')]",
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "dscextensioncopy",
+        "count": 3
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/',toLower(parameters('prefix')),variables('vmname')[copyIndex()])]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Powershell",
+        "type": "DSC",
+        "typeHandlerVersion": "2.21",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "modulesUrl": "[Uri(parameters('_artifactsLocation'),concat(variables('dscScript'),parameters('_artifactsLocationSasToken')))]",
+          "configurationFunction": "[concat(variables('vmrole')[copyIndex()],'Configuration.ps1\\Configuration')]",
+          "Properties": {
+            "DomainName": "[variables('domainName')]",
+            "DCName": "[concat(parameters('prefix'),variables('vmname')[0])]",
+            "DPMPName": "[concat(parameters('prefix'),variables('vmname')[1])]",
+            "PSName": "[concat(parameters('prefix'),variables('vmname')[2])]",
+            "DNSIPAddress": "[concat(variables('networkSettings').virtualMachinesIPAddress,add(int('0'),int('4')))]",
+            "AdminCreds": {
+              "UserName": "[parameters('adminUsername')]",
+              "Password": "PrivateSettingsRef:AdminPassword"
               }
             }
           },
