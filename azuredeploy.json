@@ -73,13 +73,13 @@
       },
       "vmrole": [
         "DC",
-        "DPMP",
-        "PS"
+        "SRV",
+        "SQL"
       ],
       "vmname": [
         "DC01",
-        "DPMP01",
-        "PS01"
+        "SRV01",
+        "SQL01"
       ],
       "vmDiskType": [
         "Premium_LRS",
@@ -98,15 +98,15 @@
           "sku": "2019-Datacenter",
           "version": "latest"
         },
-        "DPMP": {
-          "publisher": "MicrosoftWindowsServer",
-          "offer": "WindowsServer",
-          "sku": "2019-Datacenter",
+        "SRV": {
+          "publisher": "MicrosoftSQLServer",
+          "offer": "MicrosoftSQLServer",
+          "sku": "Standard",
           "version": "latest"
         },
-        "PS": {
+        "SQL": {
           "publisher": "MicrosoftSQLServer",
-          "offer": "SQL2019-WS2019",
+          "offer": "SQL2008R2SP3-WS2008R2SP1",
           "sku": "Standard",
           "version": "latest"
         }

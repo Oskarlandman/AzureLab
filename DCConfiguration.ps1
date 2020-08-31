@@ -7,9 +7,9 @@
         [Parameter(Mandatory)]
         [String]$DCName,
         [Parameter(Mandatory)]
-        [String]$DPMPName,
+        [String]$SRVName,
         [Parameter(Mandatory)]
-        [String]$PSName,
+        [String]$SQLName,
         [Parameter(Mandatory)]
         [String]$DNSIPAddress,
         [Parameter(Mandatory)]
@@ -37,14 +37,14 @@
 
         VerifyComputerJoinDomain WaitForPS
         {
-            ComputerName = $PSName
+            ComputerName = $SQLName
             Ensure = "Present"
             DependsOn = "[SetupDomain]FirstDS"
         }
 
         VerifyComputerJoinDomain WaitForDPMP
         {
-            ComputerName = $DPMPName
+            ComputerName = $SRVName
             Ensure = "Present"
             DependsOn = "[SetupDomain]FirstDS"
         }

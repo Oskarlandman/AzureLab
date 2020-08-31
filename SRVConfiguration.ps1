@@ -7,26 +7,20 @@ configuration Configuration
         [Parameter(Mandatory)]
         [String]$DCName,
         [Parameter(Mandatory)]
-        [String]$DPMPName,
+        [String]$SRVName,
         [Parameter(Mandatory)]
-        [String]$PSName,
+        [String]$SQLName,
         [Parameter(Mandatory)]
         [String]$DNSIPAddress,
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$Admincreds
     )
-    Import-DscResource -ModuleName AzureLabDSC
 
-    #$LogFolder = "TempLog"
-    #$CM = "CMTP"
-    #$LogPath = "c:\$LogFolder"
-    #$DName = $DomainName.Split(".")[0]
-    #$DCComputerAccount = "$DName\$DCName$"
-    #$DPMPComputerAccount = "$DName\$DPMPName$"
+    Import-DscResource -ModuleName AzureLabDSC
 
     [System.Management.Automation.PSCredential]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($Admincreds.UserName)", $Admincreds.Password)
 
-    Node LOCALHOST
+    Node localhost
     {
         LocalConfigurationManager
         {
@@ -38,14 +32,12 @@ configuration Configuration
         {
             DNSIPAddress = $DNSIPAddress
             Ensure = "Present"
-            DependsOn = "[DownloadSCCM]DownLoadSCCM"
         }
 
         WaitForDomainReady WaitForDomain
         {
             Ensure = "Present"
             DCName = $DCName
-            WaitSeconds = 0
             DependsOn = "[SetDNS]DnsServerAddress"
         }
 
@@ -56,11 +48,10 @@ configuration Configuration
             DependsOn = "[WaitForDomainReady]WaitForDomain"
         }
 
-        File ShareFolder
+        AddUserToLocalAdminGroup AddADUserToLocalAdminGroup
         {
-            DestinationPath = $LogPath
-            Type = 'Directory'
-            Ensure = 'Present'
+            Name = $($Admincreds.UserName)
+            DomainName = $DomainName
             DependsOn = "[JoinDomain]JoinDomain"
         }
     }
